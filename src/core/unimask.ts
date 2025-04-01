@@ -84,8 +84,8 @@ export function createMaskProcessor(maskInput: MaskInput, options: MaskProcessor
     parsedMasks = [parseMask(maskInput)];
   } else if (Array.isArray(maskInput)) {
     masks = [...maskInput];
-    // Sort from less complex to more complex
-    masks.sort((a, b) => calculateMaskComplexity(a) - calculateMaskComplexity(b));
+    // Sort from more complex to less complex
+    masks.sort((a, b) => calculateMaskComplexity(b) - calculateMaskComplexity(a));
     parsedMasks = masks.map(parseMask);
   } else if (typeof maskInput === "function") {
     dynamicMaskFn = maskInput;
@@ -123,25 +123,46 @@ function getMaskForInput(
   return { mask: masks[bestMaskIndex], parsedMask: parsedMasks[bestMaskIndex] };
 }
 
+function totalTokens(parsedMask: MaskSegment[]): number {
+  return parsedMask.reduce((count, segment) => segment.isToken ? count + 1 : count, 0);
+}
+
 function findBestMaskIndex(parsedMasks: MaskSegment[][], input: string): number {
   if (!input || parsedMasks.length === 1) return 0;
 
-  // Create an array to track how many characters each mask can process
-  const processedCounts: number[] = [];
-
-  // Test each mask by simulating the actual formatting process
-  for (let i = 0; i < parsedMasks.length; i++) {
-    processedCounts[i] = countProcessedChars(parsedMasks[i], input);
-  }
-
-  // Find the mask that processes the most characters
+  // Track how many characters each mask can process
+  const processedCounts: number[] = parsedMasks.map(mask => countProcessedChars(mask, input));
   let bestIndex = 0;
   let maxCount = processedCounts[0];
 
   for (let i = 1; i < processedCounts.length; i++) {
     if (processedCounts[i] > maxCount) {
-      maxCount = processedCounts[i];
       bestIndex = i;
+      maxCount = processedCounts[i];
+    } else if (processedCounts[i] === maxCount) {
+      const bestTotal = totalTokens(parsedMasks[bestIndex]);
+      const currentTotal = totalTokens(parsedMasks[i]);
+
+      const bestFullyMatched = processedCounts[bestIndex] === bestTotal;
+      const currentFullyMatched = processedCounts[i] === currentTotal;
+
+      // If one mask is fully matched and the other is not, choose the fully matched one.
+      if (currentFullyMatched && !bestFullyMatched) {
+        bestIndex = i;
+      } else if (!currentFullyMatched && bestFullyMatched) {
+        // keep the current best
+      } else if (bestFullyMatched && currentFullyMatched) {
+        // If both fully match then choose the one with lower token count
+        if (currentTotal < bestTotal) {
+          bestIndex = i;
+        }
+      } else {
+        // Neither mask fully matches.
+        // Prefer the mask with a higher total token count so that more input can be accepted.
+        if (currentTotal > bestTotal) {
+          bestIndex = i;
+        }
+      }
     }
   }
 
