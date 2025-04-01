@@ -22,8 +22,12 @@
   },
   "typesVersions": {
     "*": {
-      "vue": ["./dist/vue/index.d.ts"],
-      "react": ["./dist/react/index.d.ts"]
+      "vue": [
+        "./dist/vue/index.d.ts"
+      ],
+      "react": [
+        "./dist/react/index.d.ts"
+      ]
     }
   },
   "sideEffects": false,
