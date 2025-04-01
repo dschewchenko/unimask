@@ -22,10 +22,11 @@ function initializeUnimask(
     const cursorPos = input.selectionStart || 0;
     const result = maskProcessor(input.value, cursorPos);
 
-    input.value = result.formatted;
+    input.value = result.formatted.trimEnd();
+    const pos = input.value.length;
 
     setTimeout(() => {
-      input.setSelectionRange(result.cursorPosition, result.cursorPosition);
+      input.setSelectionRange(pos, pos);
     }, 0);
   };
 
@@ -33,6 +34,7 @@ function initializeUnimask(
   el.__unimaskCleanup = () => el.removeEventListener("input", inputHandler);
 }
 
+// biome-ignore lint/suspicious/noExplicitAny:
 export const vUnimask: Directive<any, MaskInput> = {
   mounted(el, binding) {
     initializeUnimask(el, binding);

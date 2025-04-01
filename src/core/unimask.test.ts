@@ -64,8 +64,8 @@ describe("Unimask", () => {
       ]);
 
       const result1 = maskProcessor("12345");
-      expect(result1.formatted).toBe("123-45-");
-      expect(result1.placeholder).toBe("123-45-####");
+      expect(result1.formatted).toBe("(123) 45");
+      expect(result1.placeholder).toBe("(123) 45#-####");
 
       const result2 = maskProcessor("1234567890");
       expect(result2.formatted).toBe("(123) 456-7890");
@@ -182,8 +182,8 @@ describe("Unimask", () => {
       ]);
 
       const steps = [
-        {input: "1", expected: {formatted: "1", placeholder: "1##.###.###-##"}},
-        {input: "123456", expected: {formatted: "123.456.", placeholder: "123.456.###-##"}},
+        {input: "1", expected: {formatted: "1", placeholder: "1#.###.###/####-##"}},
+        {input: "123456", expected: {formatted: "12.345.6", placeholder: "12.345.6##/####-##"}},
         {input: "12345678901", expected: {formatted: "123.456.789-01", placeholder: "123.456.789-01"}},
         {input: "123456789012", expected: {formatted: "12.345.678/9012-", placeholder: "12.345.678/9012-##"}},
         {input: "12345678901234", expected: {formatted: "12.345.678/9012-34", placeholder: "12.345.678/9012-34"}},
@@ -210,9 +210,9 @@ describe("Unimask", () => {
 
       // different UK postal codes
       const testCases = [
-        {input: "A", expected: {formatted: "A", placeholder: "A# #__"}},
-        {input: "A1", expected: {formatted: "A1 ", placeholder: "A1 #__"}},
-        {input: "A12", expected: {formatted: "A1 2", placeholder: "A1 2__"}},
+        {input: "A", expected: {formatted: "A", placeholder: "A_## #__"}},
+        {input: "A1", expected: {formatted: "A1", placeholder: "A1_ #__"}},
+        {input: "A12", expected: {formatted: "A12 ", placeholder: "A12 #__"}},
         {input: "A123", expected: {formatted: "A12 3", placeholder: "A12 3__"}},
         {input: "A1234", expected: {formatted: "A12 3", placeholder: "A12 3__"}},
         {input: "AB1 2CD", expected: {formatted: "AB1 2CD", placeholder: "AB1 2CD"}},

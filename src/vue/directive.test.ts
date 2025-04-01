@@ -144,8 +144,8 @@ describe("vUnimask Directive", () => {
     const sw1w0nySequences = [
       { input: "S", expected: "S" },
       { input: "SW", expected: "SW" },
-      { input: "SW1", expected: "SW1 " },
-      { input: "SW1W", expected: "SW1W " },
+      { input: "SW1", expected: "SW1" },
+      { input: "SW1W", expected: "SW1W" },
       { input: "SW1W0", expected: "SW1W 0" },
       { input: "SW1W0N", expected: "SW1W 0N" },
       { input: "SW1W0NY", expected: "SW1W 0NY" },
@@ -161,8 +161,8 @@ describe("vUnimask Directive", () => {
     const ec1a1bbSequences = [
       { input: "E", expected: "E" },
       { input: "EC", expected: "EC" },
-      { input: "EC1", expected: "EC1 " },
-      { input: "EC1A", expected: "EC1A " },
+      { input: "EC1", expected: "EC1" },
+      { input: "EC1A", expected: "EC1A" },
       { input: "EC1A1", expected: "EC1A 1" },
       { input: "EC1A1B", expected: "EC1A 1B" },
       { input: "EC1A1BB", expected: "EC1A 1BB" },
@@ -177,8 +177,8 @@ describe("vUnimask Directive", () => {
     await setInputValue("");
     const w1p1hqSequences = [
       { input: "W", expected: "W" },
-      { input: "W1", expected: "W1 " },
-      { input: "W1P", expected: "W1P " },
+      { input: "W1", expected: "W1" },
+      { input: "W1P", expected: "W1P" },
       { input: "W1P1", expected: "W1P 1" },
       { input: "W1P1H", expected: "W1P 1H" },
       { input: "W1P1HQ", expected: "W1P 1HQ" },
@@ -193,8 +193,8 @@ describe("vUnimask Directive", () => {
     await setInputValue("");
     const s11aaSequences = [
       { input: "S", expected: "S" },
-      { input: "S1", expected: "S1 " },
-      { input: "S11", expected: "S1 1" },
+      { input: "S1", expected: "S1" },
+      { input: "S11", expected: "S11" },
       { input: "S11A", expected: "S1 1A" },
       { input: "S11AA", expected: "S1 1AA" },
     ];
@@ -208,8 +208,8 @@ describe("vUnimask Directive", () => {
     await setInputValue("");
     const m601nwSequences = [
       { input: "M", expected: "M" },
-      { input: "M6", expected: "M6 " },
-      { input: "M60", expected: "M6 0" },
+      { input: "M6", expected: "M6" },
+      { input: "M60", expected: "M60" },
       { input: "M601", expected: "M60 1" },
       { input: "M601N", expected: "M60 1N" },
       { input: "M601NW", expected: "M60 1NW" },
@@ -225,8 +225,8 @@ describe("vUnimask Directive", () => {
     const cr26xhSequences = [
       { input: "C", expected: "C" },
       { input: "CR", expected: "CR" },
-      { input: "CR2", expected: "CR2 " },
-      { input: "CR26", expected: "CR2 6" },
+      { input: "CR2", expected: "CR2" },
+      { input: "CR26", expected: "CR26" },
       { input: "CR26X", expected: "CR2 6X" },
       { input: "CR26XH", expected: "CR2 6XH" },
     ];
