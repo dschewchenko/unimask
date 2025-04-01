@@ -1,6 +1,6 @@
 {
   "name": "unimask",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "A lightweight utility library for creating mask for input values",
   "main": "./dist/index.js",
