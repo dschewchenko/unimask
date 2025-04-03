@@ -1,7 +1,7 @@
 export type MaskInput = string | string[] | ((value: string, lastChar: string, cursorPos: number) => string);
-type MaskProcessorOptions = {
+export interface MaskProcessorOptions {
   trim?: boolean;
-};
+}
 
 const ESCAPE_CHAR = "!";
 const TOKENS = ["X", "A", "a", "S", "#", "*"] as const;
@@ -74,6 +74,12 @@ function calculateMaskComplexity(mask: string): number {
 }
 
 export function createMaskProcessor(maskInput: MaskInput, options: MaskProcessorOptions = {}) {
+  if (!maskInput || (typeof maskInput === "string" && maskInput.trim() === "")) {
+    return function processInput(input: string, cursorPos: number = input.length) {
+      return { formatted: input, placeholder: input, cursorPosition: cursorPos };
+    };
+  }
+
   const { trim = true } = options;
   let masks: string[] = [];
   let parsedMasks: MaskSegment[][] = [];

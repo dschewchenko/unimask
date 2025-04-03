@@ -15,6 +15,9 @@ function initializeUnimask(
   // Clean up previous handler if exists
   el.__unimaskCleanup?.();
 
+  // Ignore if no mask is provided
+  if (!binding.value) return;
+
   const maskProcessor = createMaskProcessor(binding.value);
 
   const inputHandler = (event: Event) => {
