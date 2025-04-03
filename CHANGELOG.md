@@ -1,3 +1,11 @@
+## [1.0.2](https://github.com/dschewchenko/unimask/compare/v1.0.1...v1.0.2) (2025-04-03)
+
+
+### Bug Fixes
+
+* don't process input with empty mask ([91fdb38](https://github.com/dschewchenko/unimask/commit/91fdb381b403b69a53277c0fdd7116304dc80521))
+* don't process input with empty mask ([#2](https://github.com/dschewchenko/unimask/issues/2)) ([cbd85ed](https://github.com/dschewchenko/unimask/commit/cbd85ed73f9ec77121ad0f8a8438c29de3b923a3))
+
 ## [1.0.1](https://github.com/dschewchenko/unimask/compare/v1.0.0...v1.0.1) (2025-04-01)
 
 
