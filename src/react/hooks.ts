@@ -15,22 +15,16 @@ export function useUnimask(mask: MaskInput, options?: MaskProcessorOptions) {
 
   const onInput = useCallback(
     (input: string | HTMLInputElement | ChangeEvent<HTMLInputElement>) => {
-      if (typeof input !== "string" && "target" in input) {
-        // In case of React's ChangeEvent
-        const element = input.target as HTMLInputElement;
+      const element =
+        input instanceof HTMLInputElement ? input : (input as Partial<ChangeEvent<HTMLInputElement>>).target;
+
+      if (element) {
         const cursorPos = getInputCursorPosition(element);
         const result = maskProcessor(element.value, cursorPos);
         setValue(result.formatted.trimEnd());
         setInputCursorPosition(element, result.cursorPosition);
-      } else if (typeof input === "string") {
-        setValue(maskProcessor(input).formatted);
       } else {
-        // When an HTMLInputElement is passed directly
-        const element = input;
-        const cursorPos = getInputCursorPosition(element);
-        const result = maskProcessor(element.value, cursorPos);
-        setValue(result.formatted.trimEnd());
-        setInputCursorPosition(element, result.cursorPosition);
+        setValue(maskProcessor(input as string).formatted);
       }
     },
     [maskProcessor],

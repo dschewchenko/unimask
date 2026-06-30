@@ -1,16 +1,15 @@
 # unimask [![npm](https://img.shields.io/npm/v/unimask.svg)](https://www.npmjs.com/package/unimask) [![build status](https://github.com/dschewchenko/unimask/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/dschewchenko/unimask/actions/workflows/release.yml) [![Download](https://img.shields.io/npm/dm/unimask)](https://www.npmjs.com/package/unimask)
 
-
 A lightweight TypeScript library for masking and formatting input values.
 
 ## Features
 
--   **Masking**: Apply predefined or custom masks to input values.
--   **Formatting**: Format input values based on the applied mask.
--   **Framework Agnostic**: Can be used with any JavaScript framework or library.
--   **Customizable**: Define your own masks and formatting rules.
--   **Lightweight**: Small footprint with no external dependencies.
--   **Tests**: Comprehensive test coverage to ensure reliability. (90%+)
+- **Masking**: Apply predefined or custom masks to input values.
+- **Formatting**: Format input values based on the applied mask.
+- **Framework Agnostic**: Can be used with any JavaScript framework or library.
+- **Customizable**: Define your own masks and formatting rules.
+- **Lightweight**: Small footprint with no external dependencies.
+- **Tests**: Comprehensive test coverage to ensure reliability. (90%+)
 
 ## Installation
 
@@ -25,28 +24,26 @@ yarn add unimask
 bun add unimask
 ```
 
-
 ## Usage
 
 ### Basic Masking
 
 ```ts
-import { createMaskProcessor } from 'unimask';
+import { createMaskProcessor } from "unimask";
 
-const maskProcessor = createMaskProcessor('(###) ###-####');
-const result = maskProcessor('12345678');
+const maskProcessor = createMaskProcessor("(###) ###-####");
+const result = maskProcessor("12345678");
 
 console.log(result.formatted); // Output: (123) 456-78
 console.log(result.placeholder); // Output: (123) 456-78##
-
 ```
 
 ### Array of Masks
 
 ```ts
-const maskProcessor = createMaskProcessor(['+1 (###) ###-####', '###-###-####']);
-const result1 = maskProcessor('1234567890');
-const result2 = maskProcessor('1234567');
+const maskProcessor = createMaskProcessor(["+1 (###) ###-####", "###-###-####"]);
+const result1 = maskProcessor("1234567890");
+const result2 = maskProcessor("1234567");
 
 console.log(result1.formatted); // Output: 123-456-7890
 console.log(result2.formatted); // Output: 123-4567
@@ -58,13 +55,11 @@ It will automatically switch between masks based on the input value. Also order 
 
 ```ts
 const maskProcessor = createMaskProcessor((value: string) => {
-  return value.startsWith("+")
-    ? "+1 (###) ###-####"
-    : "###-###-####";
+  return value.startsWith("+") ? "+1 (###) ###-####" : "###-###-####";
 });
 
-const result1 = maskProcessor('1234567890');
-const result2 = maskProcessor('+12345678901');
+const result1 = maskProcessor("1234567890");
+const result2 = maskProcessor("+12345678901");
 
 console.log(result1.formatted); // Output: 123-456-7890
 console.log(result2.formatted); // Output: +1 (234) 567-8901
@@ -75,10 +70,10 @@ console.log(result2.formatted); // Output: +1 (234) 567-8901
 It will return formatted string but will not trim the excess characters.
 
 ```ts
-const maskProcessor = createMaskProcessor('(###) ###-####', { trim: false });
+const maskProcessor = createMaskProcessor("(###) ###-####", { trim: false });
 
-const result = maskProcessor('12345678');
-const result2 = maskProcessor('12345678901234567890');
+const result = maskProcessor("12345678");
+const result2 = maskProcessor("12345678901234567890");
 
 console.log(result.formatted); // Output: (123) 456-78
 console.log(result2.formatted); // Output: (123) 456-78901234567890
@@ -88,7 +83,6 @@ console.log(result2.formatted); // Output: (123) 456-78901234567890
 
 **createMaskProcessor(mask: MaskInput, options?: MaskProcessorOptions)**
 Creates a mask processor function.
-
 
 - mask: A mask string, an array of masks, or a function that returns a mask string based on the input value.
 - options: An optional object with the following properties:
@@ -157,19 +151,18 @@ const value = ref("");
 
 ```vue
 <template>
-  <input v-model="value" />
+  <input :value="value" @input="onInput" />
 </template>
 <script setup lang="ts">
 import { useUnimask } from "unimask/vue";
-import { ref } from "vue";
-const value = ref("");
 
-
+const { value, onInput } = useUnimask("(###) ###-####");
+</script>
+```
 
 ## Enjoy!
 
 If you have any questions or suggestions, feel free to open an issue or pull request.
-
 
 ## Roadmap
 
@@ -182,7 +175,6 @@ If you have any questions or suggestions, feel free to open an issue or pull req
 - [ ] Angular directive
 - [ ] Svelte directive
 - [ ] Custom tokens and formatters
-
 
 ## License
 

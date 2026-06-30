@@ -10,7 +10,7 @@ export default defineConfig({
       { find: "unimask/react", replacement: fileURLToPath(new URL("../src/react/index.ts", import.meta.url)) },
       { find: "unimask/vue", replacement: fileURLToPath(new URL("../src/vue/index.ts", import.meta.url)) },
       { find: "unimask", replacement: fileURLToPath(new URL("../src/index.ts", import.meta.url)) },
-      { find: "@", replacement: fileURLToPath(new URL("./src", import.meta.url)) }
-    ]
-  }
+      { find: "@", replacement: fileURLToPath(new URL("./src", import.meta.url)) },
+    ],
+  },
 });

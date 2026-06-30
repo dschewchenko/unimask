@@ -1,57 +1,51 @@
 <template>
-  <input
-    :value="modelValue"
-    v-unimask="mask"
-    @input="onInput"
-    :placeholder="placeholder"
-    v-bind="$attrs"
-  />
+  <input :value="modelValue" v-unimask="mask" @input="onInput" :placeholder="placeholder" v-bind="$attrs" />
 </template>
 
 <script>
-import { defineComponent, watch } from 'vue';
-import { vUnimask } from 'unimask/vue';
+import { defineComponent, watch } from "vue";
+import { vUnimask } from "unimask/vue";
 
 export default defineComponent({
-  name: 'MaskedInput',
+  name: "MaskedInput",
   inheritAttrs: false,
   directives: {
-    unimask: vUnimask
+    unimask: vUnimask,
   },
   props: {
     modelValue: {
       type: String,
-      default: ''
+      default: "",
     },
     mask: {
       type: [String, Array, Function],
-      required: true
+      required: true,
     },
     options: {
       type: Object,
-      default: () => ({})
+      default: () => ({}),
     },
     placeholder: {
       type: String,
-      default: ''
-    }
+      default: "",
+    },
   },
-  emits: ['update:modelValue'],
+  emits: ["update:modelValue"],
   setup(props, { emit }) {
     watch([() => props.mask, () => props.options], () => {
       if (props.modelValue) {
-        emit('update:modelValue', props.modelValue);
+        emit("update:modelValue", props.modelValue);
       }
     });
 
     const onInput = (event) => {
       const input = event.target;
-      emit('update:modelValue', input.value);
+      emit("update:modelValue", input.value);
     };
 
     return {
-      onInput
+      onInput,
     };
-  }
+  },
 });
 </script>
