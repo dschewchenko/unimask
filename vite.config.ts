@@ -1,36 +1,28 @@
 /// <reference types="vitest/config" />
-import {resolve} from "node:path";
-import {defineConfig} from "vite";
-import dts from "vite-plugin-dts";
+import { resolve } from "node:path";
+import { defineConfig } from "vite";
 
 export default defineConfig({
   build: {
     lib: {
       entry: {
-        'index': resolve(__dirname, 'src/index.ts'),
-        'vue/index': resolve(__dirname, 'src/vue/index.ts'),
-        'react/index': resolve(__dirname, 'src/react/index.ts')
+        index: resolve(__dirname, "src/index.ts"),
+        "vue/index": resolve(__dirname, "src/vue/index.ts"),
+        "react/index": resolve(__dirname, "src/react/index.ts"),
       },
-      formats: ['es']
+      formats: ["es"],
     },
     rollupOptions: {
-      external: ['vue', 'react', 'react-dom'],
+      external: ["vue", "react", "react-dom"],
       output: {
         preserveModules: true,
-        preserveModulesRoot: 'src'
-      }
+        preserveModulesRoot: "src",
+      },
     },
     sourcemap: true,
     minify: true,
-    outDir: 'dist'
+    outDir: "dist",
   },
-  plugins: [
-    dts({
-      entryRoot: 'src',
-      outDir: 'dist',
-      include: ['src']
-    })
-  ],
   test: {
     environment: "jsdom",
     reporters: process.env.GITHUB_ACTIONS ? ["dot", "github-actions"] : ["dot"],
@@ -38,7 +30,7 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "json-summary", "json"],
       include: ["src/**/*.ts"],
-      reportOnFailure: true
-    }
-  }
+      reportOnFailure: true,
+    },
+  },
 });
