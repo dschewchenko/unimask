@@ -1,5 +1,5 @@
-import {describe, expect, it} from "vitest";
-import {createMaskProcessor} from "./unimask";
+import { describe, expect, it } from "vitest";
+import { createMaskProcessor } from "./unimask";
 
 describe("Unimask", () => {
   // ... existing test blocks ...
@@ -30,7 +30,7 @@ describe("Unimask", () => {
 
       const result1 = maskProcessor("ab12");
       expect(result1.formatted).toBe("AB-12 (");
-      expect(result1.placeholder).toBe("AB-12 (___)")
+      expect(result1.placeholder).toBe("AB-12 (___)");
 
       const result2 = maskProcessor("ab12xyz");
       expect(result2.formatted).toBe("AB-12 (xyz)");
@@ -59,8 +59,8 @@ describe("Unimask", () => {
 
     it("should handle array of masks with correct placeholders", () => {
       const maskProcessor = createMaskProcessor([
-        "###-##-####",    // SSN
-        "(###) ###-####"  // Phone
+        "###-##-####", // SSN
+        "(###) ###-####", // Phone
       ]);
 
       const result1 = maskProcessor("12345");
@@ -82,6 +82,15 @@ describe("Unimask", () => {
       const result2 = maskProcessor("123abc");
       expect(result2.formatted).toBe("#12 A");
       expect(result2.placeholder).toBe("#12 A__");
+    });
+
+    it("should not duplicate escaped literals when input already contains them", () => {
+      const maskProcessor = createMaskProcessor("!#-##");
+
+      const result = maskProcessor("#12");
+
+      expect(result.formatted).toBe("#-12");
+      expect(result.placeholder).toBe("#-12");
     });
 
     it("should show correct placeholder with dynamic mask function", () => {
@@ -160,12 +169,12 @@ describe("Unimask", () => {
     it("should handle cursor position edits with array of modifications", () => {
       const maskProcessor = createMaskProcessor("###-###-####");
       const modifications = [
-        {input: "1234567890", cursor: 10, expected: {formatted: "123-456-7890", placeholder: "123-456-7890"}},
-        {input: "12934567890", cursor: 3, expected: {formatted: "129-345-6789", placeholder: "129-345-6789"}},
-        {input: "512934567890", cursor: 1, expected: {formatted: "512-934-5678", placeholder: "512-934-5678"}},
+        { input: "1234567890", cursor: 10, expected: { formatted: "123-456-7890", placeholder: "123-456-7890" } },
+        { input: "12934567890", cursor: 3, expected: { formatted: "129-345-6789", placeholder: "129-345-6789" } },
+        { input: "512934567890", cursor: 1, expected: { formatted: "512-934-5678", placeholder: "512-934-5678" } },
         // Delete scenarios
-        {input: "51293456", cursor: 8, expected: {formatted: "512-934-56", placeholder: "512-934-56##"}},
-        {input: "5129", cursor: 4, expected: {formatted: "512-9", placeholder: "512-9##-####"}}
+        { input: "51293456", cursor: 8, expected: { formatted: "512-934-56", placeholder: "512-934-56##" } },
+        { input: "5129", cursor: 4, expected: { formatted: "512-9", placeholder: "512-9##-####" } },
       ];
 
       for (const mod of modifications) {
@@ -178,17 +187,17 @@ describe("Unimask", () => {
     it("should handle multi-mask formats with sequential input", () => {
       const maskProcessor = createMaskProcessor([
         "###.###.###-##", // CPF
-        "##.###.###/####-##" // CNPJ
+        "##.###.###/####-##", // CNPJ
       ]);
 
       const steps = [
-        {input: "1", expected: {formatted: "1", placeholder: "1#.###.###/####-##"}},
-        {input: "123456", expected: {formatted: "12.345.6", placeholder: "12.345.6##/####-##"}},
-        {input: "12345678901", expected: {formatted: "123.456.789-01", placeholder: "123.456.789-01"}},
-        {input: "123456789012", expected: {formatted: "12.345.678/9012-", placeholder: "12.345.678/9012-##"}},
-        {input: "12345678901234", expected: {formatted: "12.345.678/9012-34", placeholder: "12.345.678/9012-34"}},
+        { input: "1", expected: { formatted: "1", placeholder: "1#.###.###/####-##" } },
+        { input: "123456", expected: { formatted: "12.345.6", placeholder: "12.345.6##/####-##" } },
+        { input: "12345678901", expected: { formatted: "123.456.789-01", placeholder: "123.456.789-01" } },
+        { input: "123456789012", expected: { formatted: "12.345.678/9012-", placeholder: "12.345.678/9012-##" } },
+        { input: "12345678901234", expected: { formatted: "12.345.678/9012-34", placeholder: "12.345.678/9012-34" } },
         // Remove characters
-        {input: "12345678901", expected: {formatted: "123.456.789-01", placeholder: "123.456.789-01"}}
+        { input: "12345678901", expected: { formatted: "123.456.789-01", placeholder: "123.456.789-01" } },
       ];
 
       for (const step of steps) {
@@ -200,24 +209,24 @@ describe("Unimask", () => {
 
     it("should handle multi-mask formats with sequential input 2", () => {
       const maskProcessor = createMaskProcessor([
-        "AA## #AA",   // DN55 1PT
-        "AA# #AA",    // CR2 6XH
-        "A#A #AA",    // W1P 1HQ
-        "AA#A #AA",   // EC1A 1BB
-        "A## #AA",    // M60 1NW
-        "A# #AA",     // S1 1AA
+        "AA## #AA", // DN55 1PT
+        "AA# #AA", // CR2 6XH
+        "A#A #AA", // W1P 1HQ
+        "AA#A #AA", // EC1A 1BB
+        "A## #AA", // M60 1NW
+        "A# #AA", // S1 1AA
       ]);
 
       // different UK postal codes
       const testCases = [
-        {input: "A", expected: {formatted: "A", placeholder: "A_## #__"}},
-        {input: "A1", expected: {formatted: "A1", placeholder: "A1_ #__"}},
-        {input: "A12", expected: {formatted: "A12 ", placeholder: "A12 #__"}},
-        {input: "A123", expected: {formatted: "A12 3", placeholder: "A12 3__"}},
-        {input: "A1234", expected: {formatted: "A12 3", placeholder: "A12 3__"}},
-        {input: "AB1 2CD", expected: {formatted: "AB1 2CD", placeholder: "AB1 2CD"}},
-        {input: "AB12 3CD", expected: {formatted: "AB12 3CD", placeholder: "AB12 3CD"}},
-        {input: "AB1C 2CD", expected: {formatted: "AB1C 2CD", placeholder: "AB1C 2CD"}}
+        { input: "A", expected: { formatted: "A", placeholder: "A_## #__" } },
+        { input: "A1", expected: { formatted: "A1", placeholder: "A1_ #__" } },
+        { input: "A12", expected: { formatted: "A12 ", placeholder: "A12 #__" } },
+        { input: "A123", expected: { formatted: "A12 3", placeholder: "A12 3__" } },
+        { input: "A1234", expected: { formatted: "A12 3", placeholder: "A12 3__" } },
+        { input: "AB1 2CD", expected: { formatted: "AB1 2CD", placeholder: "AB1 2CD" } },
+        { input: "AB12 3CD", expected: { formatted: "AB12 3CD", placeholder: "AB12 3CD" } },
+        { input: "AB1C 2CD", expected: { formatted: "AB1C 2CD", placeholder: "AB1C 2CD" } },
       ];
 
       for (const test of testCases) {
@@ -236,10 +245,13 @@ describe("Unimask", () => {
       });
 
       const testCases = [
-        {input: "4", expected: {formatted: "4", placeholder: "4### #### #### ####"}},
-        {input: "4111111111111111", expected: {formatted: "4111 1111 1111 1111", placeholder: "4111 1111 1111 1111"}},
-        {input: "37", expected: {formatted: "37", placeholder: "37## ###### #####"}},
-        {input: "378282246310005", expected: {formatted: "3782 822463 10005", placeholder: "3782 822463 10005"}}
+        { input: "4", expected: { formatted: "4", placeholder: "4### #### #### ####" } },
+        {
+          input: "4111111111111111",
+          expected: { formatted: "4111 1111 1111 1111", placeholder: "4111 1111 1111 1111" },
+        },
+        { input: "37", expected: { formatted: "37", placeholder: "37## ###### #####" } },
+        { input: "378282246310005", expected: { formatted: "3782 822463 10005", placeholder: "3782 822463 10005" } },
       ];
 
       for (const test of testCases) {
@@ -252,14 +264,14 @@ describe("Unimask", () => {
     it("should simulate user typing and deleting in a form field", () => {
       const maskProcessor = createMaskProcessor("(###) ###-####");
       const userActions = [
-        {action: "type", value: "123", expected: {formatted: "(123) ", placeholder: "(123) ###-####"}},
-        {action: "type", value: "4", expected: {formatted: "(123) 4", placeholder: "(123) 4##-####"}},
-        {action: "type", value: "56", expected: {formatted: "(123) 456-", placeholder: "(123) 456-####"}},
-        {action: "delete", count: 3, expected: {formatted: "(123) ", placeholder: "(123) ###-####"}},
-        {action: "type", value: "9", expected: {formatted: "(123) 9", placeholder: "(123) 9##-####"}},
-        {action: "type", value: "0", expected: {formatted: "(123) 90", placeholder: "(123) 90#-####"}},
-        {action: "delete", count: 4, expected: {formatted: "(1", placeholder: "(1##) ###-####"}},
-        {action: "paste", value: "4567890", expected: {formatted: "(145) 678-90", placeholder: "(145) 678-90##"}}
+        { action: "type", value: "123", expected: { formatted: "(123) ", placeholder: "(123) ###-####" } },
+        { action: "type", value: "4", expected: { formatted: "(123) 4", placeholder: "(123) 4##-####" } },
+        { action: "type", value: "56", expected: { formatted: "(123) 456-", placeholder: "(123) 456-####" } },
+        { action: "delete", count: 3, expected: { formatted: "(123) ", placeholder: "(123) ###-####" } },
+        { action: "type", value: "9", expected: { formatted: "(123) 9", placeholder: "(123) 9##-####" } },
+        { action: "type", value: "0", expected: { formatted: "(123) 90", placeholder: "(123) 90#-####" } },
+        { action: "delete", count: 4, expected: { formatted: "(1", placeholder: "(1##) ###-####" } },
+        { action: "paste", value: "4567890", expected: { formatted: "(145) 678-90", placeholder: "(145) 678-90##" } },
       ];
 
       let currentInput = "";
@@ -268,7 +280,7 @@ describe("Unimask", () => {
         if (action.action === "type") {
           currentInput += action.value;
         } else if (action.action === "delete") {
-          // @ts-ignore
+          // @ts-expect-error
           currentInput = currentInput.slice(0, -action.count);
         } else if (action.action === "paste") {
           currentInput += action.value;
@@ -289,28 +301,32 @@ describe("Unimask", () => {
           initialInput: "",
           pasteValue: "1234567890",
           cursorPos: 0,
-          expected: {formatted: "123-456-7890", placeholder: "123-456-7890"}
+          expected: { formatted: "123-456-7890", placeholder: "123-456-7890" },
         },
 
         // Start with partial input "123", paste "456" in the middle
         {
-          initialInput: "123890", pasteValue: "4567", cursorPos: 3,
-          finalInput: "1234567890", expected: {formatted: "123-456-7890", placeholder: "123-456-7890"}
+          initialInput: "123890",
+          pasteValue: "4567",
+          cursorPos: 3,
+          finalInput: "1234567890",
+          expected: { formatted: "123-456-7890", placeholder: "123-456-7890" },
         },
 
         // Start with formatted value, paste in additional digits that would exceed the mask
         {
-          initialInput: "1234567890", pasteValue: "99", cursorPos: 7,
-          finalInput: "1234567990", expected: {formatted: "123-456-7990", placeholder: "123-456-7990"}
-        }
+          initialInput: "1234567890",
+          pasteValue: "99",
+          cursorPos: 7,
+          finalInput: "1234567990",
+          expected: { formatted: "123-456-7990", placeholder: "123-456-7990" },
+        },
       ];
 
       for (const test of pasteTests) {
-        const finalInput = test.finalInput || (
-          test.cursorPos === 0
-            ? test.pasteValue + test.initialInput
-            : test.initialInput + test.pasteValue
-        );
+        const finalInput =
+          test.finalInput ||
+          (test.cursorPos === 0 ? test.pasteValue + test.initialInput : test.initialInput + test.pasteValue);
 
         const result = maskProcessor(finalInput, test.cursorPos);
 
@@ -330,7 +346,7 @@ describe("Unimask", () => {
     });
 
     it("should keep excess characters when trim is false", () => {
-      const maskProcessor = createMaskProcessor("###-####", {trim: false});
+      const maskProcessor = createMaskProcessor("###-####", { trim: false });
 
       const result = maskProcessor("12345678901");
       expect(result.formatted).toBe("123-45678901");
@@ -338,7 +354,7 @@ describe("Unimask", () => {
     });
 
     it("should handle sequential typing with trim=false", () => {
-      const maskProcessor = createMaskProcessor("(###) ###-####", {trim: false});
+      const maskProcessor = createMaskProcessor("(###) ###-####", { trim: false });
       const fullInput = "12345678901234567890";
       let currentInput = "";
 
@@ -361,22 +377,22 @@ describe("Unimask", () => {
         {
           mask: "AA-##",
           input: "ab123456",
-          expected: {formatted: "AB-123456", placeholder: "AB-123456"}
+          expected: { formatted: "AB-123456", placeholder: "AB-123456" },
         },
         {
           mask: "##/##/####",
           input: "010120231234",
-          expected: {formatted: "01/01/20231234", placeholder: "01/01/20231234"}
+          expected: { formatted: "01/01/20231234", placeholder: "01/01/20231234" },
         },
         {
           mask: "A-***",
           input: "Aabcdefg",
-          expected: {formatted: "A-abcdefg", placeholder: "A-abcdefg"}
-        }
+          expected: { formatted: "A-abcdefg", placeholder: "A-abcdefg" },
+        },
       ];
 
       for (const test of tests) {
-        const maskProcessor = createMaskProcessor(test.mask, {trim: false});
+        const maskProcessor = createMaskProcessor(test.mask, { trim: false });
         const result = maskProcessor(test.input);
         expect(result.formatted).toBe(test.expected.formatted);
         expect(result.placeholder).toBe(test.expected.placeholder);
@@ -384,10 +400,13 @@ describe("Unimask", () => {
     });
 
     it("should work with array masks and trim=false", () => {
-      const maskProcessor = createMaskProcessor([
-        "###-##-####",    // SSN
-        "(###) ###-####"  // Phone
-      ], {trim: false});
+      const maskProcessor = createMaskProcessor(
+        [
+          "###-##-####", // SSN
+          "(###) ###-####", // Phone
+        ],
+        { trim: false },
+      );
 
       const result = maskProcessor("123456789012345");
       expect(result.formatted).toBe("(123) 456-789012345");
@@ -395,9 +414,12 @@ describe("Unimask", () => {
     });
 
     it("should work with dynamic masks and trim=false", () => {
-      const maskProcessor = createMaskProcessor((value) => {
-        return value.length <= 4 ? "####" : "####-####";
-      }, {trim: false});
+      const maskProcessor = createMaskProcessor(
+        (value) => {
+          return value.length <= 4 ? "####" : "####-####";
+        },
+        { trim: false },
+      );
 
       const result1 = maskProcessor("123");
       expect(result1.formatted).toBe("123");

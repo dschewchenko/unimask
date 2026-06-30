@@ -1,13 +1,36 @@
 export type MaskInput = string | string[] | ((value: string, lastChar: string, cursorPos: number) => string);
+
 export interface MaskProcessorOptions {
   trim?: boolean;
+  lazy?: boolean;
+}
+
+export interface MaskProcessorResult {
+  formatted: string;
+  placeholder: string;
+  cursorPosition: number;
+}
+
+export type MaskProcessor = (input: string, cursorPos?: number) => MaskProcessorResult;
+
+type MaskFormatResult = Pick<MaskProcessorResult, "formatted" | "cursorPosition">;
+
+function createIdentityProcessor(): MaskProcessor {
+  return function processInput(input: string, cursorPos: number = input.length): MaskProcessorResult {
+    return { formatted: input, placeholder: input, cursorPosition: cursorPos };
+  };
 }
 
 const ESCAPE_CHAR = "!";
 const TOKENS = ["X", "A", "a", "S", "#", "*"] as const;
-type MainToken = typeof TOKENS[number];
+type MainToken = (typeof TOKENS)[number];
 const PLACEHOLDER_CHARS: Record<MainToken, string> = {
-  "A": "_", "a": "_", "S": "_", "X": "_", "*": "_", "#": "#"
+  A: "_",
+  a: "_",
+  S: "_",
+  X: "_",
+  "*": "_",
+  "#": "#",
 };
 
 type MaskSegment = {
@@ -73,14 +96,12 @@ function calculateMaskComplexity(mask: string): number {
   return complexity;
 }
 
-export function createMaskProcessor(maskInput: MaskInput, options: MaskProcessorOptions = {}) {
-  if (!maskInput || (typeof maskInput === "string" && maskInput.trim() === "")) {
-    return function processInput(input: string, cursorPos: number = input.length) {
-      return { formatted: input, placeholder: input, cursorPosition: cursorPos };
-    };
+export function createMaskProcessor(maskInput: MaskInput, options: MaskProcessorOptions = {}): MaskProcessor {
+  if (typeof maskInput === "string" && maskInput.trim() === "") {
+    return createIdentityProcessor();
   }
 
-  const { trim = true } = options;
+  const { trim = true, lazy = false } = options;
   let masks: string[] = [];
   let parsedMasks: MaskSegment[][] = [];
   let dynamicMaskFn: ((val: string, lastChar: string, cursorPos: number) => string) | null = null;
@@ -99,15 +120,15 @@ export function createMaskProcessor(maskInput: MaskInput, options: MaskProcessor
     throw new Error("Invalid maskInput type");
   }
 
-  return function processInput(input: string, cursorPos: number = input.length) {
+  return function processInput(input: string, cursorPos: number = input.length): MaskProcessorResult {
     // Get appropriate mask for this input
     const { parsedMask } = getMaskForInput(masks, parsedMasks, dynamicMaskFn, input, cursorPos);
 
     // Format the input using the mask
-    const { formatted, cursorPosition } = formatWithMask(parsedMask, input, trim, cursorPos);
+    const { formatted, cursorPosition } = formatWithMask({ parsedMask, input, trim, lazy, cursorPos });
 
     // Create a placeholder for the mask
-    const placeholder = createPlaceholder(parsedMask, formatted);
+    const placeholder = createPlaceholder(parsedMask, formatted, lazy);
 
     return { formatted, placeholder, cursorPosition };
   };
@@ -118,7 +139,7 @@ function getMaskForInput(
   parsedMasks: MaskSegment[][],
   dynamicMaskFn: ((val: string, lastChar: string, cursorPos: number) => string) | null,
   input: string,
-  cursorPos: number
+  cursorPos: number,
 ): { mask: string; parsedMask: MaskSegment[] } {
   if (dynamicMaskFn) {
     const dynamicMask = dynamicMaskFn(input, input.charAt(input.length - 1) || "", cursorPos);
@@ -130,14 +151,14 @@ function getMaskForInput(
 }
 
 function totalTokens(parsedMask: MaskSegment[]): number {
-  return parsedMask.reduce((count, segment) => segment.isToken ? count + 1 : count, 0);
+  return parsedMask.reduce((count, segment) => (segment.isToken ? count + 1 : count), 0);
 }
 
 function findBestMaskIndex(parsedMasks: MaskSegment[][], input: string): number {
   if (!input || parsedMasks.length === 1) return 0;
 
   // Track how many characters each mask can process
-  const processedCounts: number[] = parsedMasks.map(mask => countProcessedChars(mask, input));
+  const processedCounts: number[] = parsedMasks.map((mask) => countProcessedChars(mask, input));
   let bestIndex = 0;
   let maxCount = processedCounts[0];
 
@@ -214,12 +235,19 @@ function countProcessedChars(mask: MaskSegment[], input: string): number {
   return inputIndex;
 }
 
-function formatWithMask(
-  parsedMask: MaskSegment[],
-  input: string,
-  trim: boolean,
-  cursorPos: number
-): { formatted: string; cursorPosition: number } {
+function formatWithMask({
+  parsedMask,
+  input,
+  cursorPos,
+  trim,
+  lazy,
+}: {
+  parsedMask: MaskSegment[];
+  input: string;
+  trim: boolean;
+  lazy: boolean;
+  cursorPos: number;
+}): MaskFormatResult {
   if (!input) return { formatted: "", cursorPosition: 0 };
 
   let formatted = "";
@@ -230,6 +258,7 @@ function formatWithMask(
 
   for (let i = 0; i < parsedMask.length; i++) {
     const segment = parsedMask[i];
+    const isLiteral = inputIndex < input.length && input[inputIndex] === segment.char;
 
     // Track cursor position
     if (inputIndex === inputCursorPos) {
@@ -237,11 +266,18 @@ function formatWithMask(
     }
 
     if (segment.isEscaped) {
-      formatted += segment.char;
-      formattedIndex++;
-
-      if (inputIndex < input.length && input[inputIndex] === segment.char) {
-        inputIndex++;
+      if (lazy) {
+        if (isLiteral) {
+          formatted += segment.char;
+          formattedIndex++;
+          inputIndex++;
+        }
+      } else {
+        formatted += segment.char;
+        formattedIndex++;
+        if (isLiteral) {
+          inputIndex++;
+        }
       }
       continue;
     }
@@ -258,7 +294,7 @@ function formatWithMask(
       formatted += segment.char;
       formattedIndex++;
 
-      if (inputIndex < input.length && input[inputIndex] === segment.char) {
+      if (isLiteral) {
         inputIndex++;
       }
     }
@@ -294,7 +330,8 @@ function formatWithMask(
   return { formatted, cursorPosition };
 }
 
-function createPlaceholder(parsedMask: MaskSegment[], formatted: string): string {
+function createPlaceholder(parsedMask: MaskSegment[], formatted: string, lazy: boolean): string {
+  if (lazy) return formatted;
   if (!formatted) {
     let placeholder = "";
     for (const segment of parsedMask) {
@@ -325,9 +362,11 @@ function findMaskOffset(parsedMask: MaskSegment[], formatted: string): number {
     }
 
     const segment = parsedMask[offset];
-    if (segment.isToken ||
+    if (
+      segment.isToken ||
       (segment.isEscaped && formattedIndex < formatted.length) ||
-      (!segment.isToken && !segment.isEscaped && formattedIndex < formatted.length)) {
+      (!segment.isToken && !segment.isEscaped && formattedIndex < formatted.length)
+    ) {
       formattedIndex++;
     }
   }

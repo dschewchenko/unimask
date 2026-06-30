@@ -1,5 +1,6 @@
 import type { Directive, DirectiveBinding } from "vue";
 import { createMaskProcessor, type MaskInput } from "../core";
+import { dispatchInputEvent, getInputCursorPosition, setInputCursorPosition } from "../dom";
 
 declare global {
   interface HTMLInputElement {
@@ -8,37 +9,48 @@ declare global {
 }
 
 // Extract initialization logic to standalone function
-function initializeUnimask(
-  el: HTMLInputElement,
-  binding: DirectiveBinding<MaskInput>
-) {
+function initializeUnimask(el: HTMLInputElement, binding: DirectiveBinding<MaskInput>) {
   // Clean up previous handler if exists
   el.__unimaskCleanup?.();
 
   // Ignore if no mask is provided
   if (!binding.value) return;
+  let isProcessing = false;
 
-  const maskProcessor = createMaskProcessor(binding.value);
+  const eagerProcessor = createMaskProcessor(binding.value);
+  const lazyProcessor = createMaskProcessor(binding.value, { lazy: true });
+
+  const initialResult = eagerProcessor(el.value);
+  el.value = initialResult.formatted;
+  let oldValue = el.value;
 
   const inputHandler = (event: Event) => {
+    if (isProcessing) return;
+    isProcessing = true;
+
     const input = event.target as HTMLInputElement;
-    const cursorPos = input.selectionStart || 0;
-    const result = maskProcessor(input.value, cursorPos);
+    const cursorPos = getInputCursorPosition(input);
+    const isDeleting = input.value.length < oldValue.length;
+    const processor = isDeleting ? lazyProcessor : eagerProcessor;
+    const result = processor(input.value, cursorPos);
+    const formattedValue = result.formatted.trimEnd();
+    oldValue = formattedValue;
 
-    input.value = result.formatted.trimEnd();
-    const pos = input.value.length;
+    if (input.value !== formattedValue) {
+      event.stopImmediatePropagation();
+      input.value = formattedValue;
+      dispatchInputEvent(input);
+    }
 
-    setTimeout(() => {
-      input.setSelectionRange(pos, pos);
-    }, 0);
+    setInputCursorPosition(input, result.cursorPosition);
+    isProcessing = false;
   };
 
-  el.addEventListener("input", inputHandler);
-  el.__unimaskCleanup = () => el.removeEventListener("input", inputHandler);
+  el.addEventListener("input", inputHandler, true);
+  el.__unimaskCleanup = () => el.removeEventListener("input", inputHandler, true);
 }
 
-// biome-ignore lint/suspicious/noExplicitAny:
-export const vUnimask: Directive<any, MaskInput> = {
+export const vUnimask: Directive<HTMLInputElement, MaskInput> = {
   mounted(el, binding) {
     initializeUnimask(el, binding);
   },
@@ -51,5 +63,5 @@ export const vUnimask: Directive<any, MaskInput> = {
     if (binding.value !== binding.oldValue) {
       initializeUnimask(el, binding);
     }
-  }
+  },
 };

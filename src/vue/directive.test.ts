@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { vUnimask } from "./directive";
 import { mount } from "@vue/test-utils";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { defineComponent, nextTick } from "vue";
-import type {MaskInput} from "../core";
+import type { MaskInput } from "../core";
+import { vUnimask } from "./directive";
 
 // Create reusable test setup helper
 function setupDirectiveTest(mask: MaskInput = "###-###-####") {
@@ -12,17 +12,17 @@ function setupDirectiveTest(mask: MaskInput = "###-###-####") {
     props: {
       mask: {
         type: [String, Array, Function],
-        default: mask
-      }
+        default: mask,
+      },
     },
     directives: {
-      mask: vUnimask
-    }
+      mask: vUnimask,
+    },
   });
 
   // Mount the component
   const wrapper = mount(TestComponent, {
-    props: { mask }
+    props: { mask },
   });
 
   // Get the input element
@@ -45,7 +45,7 @@ function setupDirectiveTest(mask: MaskInput = "###-###-####") {
     wrapper,
     input,
     setInputValue,
-    updateMask
+    updateMask,
   };
 }
 
@@ -75,7 +75,7 @@ describe("vUnimask Directive", () => {
 
     wrapper.unmount();
 
-    expect(removeEventListenerSpy).toHaveBeenCalledWith("input", expect.any(Function));
+    expect(removeEventListenerSpy).toHaveBeenCalledWith("input", expect.any(Function), true);
   });
 
   it("should reinitialize when binding value changes", async () => {
@@ -102,6 +102,63 @@ describe("vUnimask Directive", () => {
     expect(selectionRangeSpy).toHaveBeenCalled();
   });
 
+  it("should emit formatted value from a wrapped input before parent model update", async () => {
+    const TestComponent = defineComponent({
+      template: `
+        <WrappedInput v-model="value" />
+      `,
+      components: {
+        WrappedInput: defineComponent({
+          directives: {
+            unimask: vUnimask,
+          },
+          props: {
+            modelValue: {
+              type: String,
+              default: "",
+            },
+          },
+          emits: ["update:modelValue"],
+          setup(_, { emit }) {
+            const onInput = (event: Event) => {
+              emit("update:modelValue", (event.target as HTMLInputElement).value);
+            };
+
+            return {
+              onInput,
+            };
+          },
+          template: `
+            <input
+              :value="modelValue"
+              v-unimask="'#####'"
+              @input="onInput"
+            />
+          `,
+        }),
+      },
+      data() {
+        return {
+          value: "",
+        };
+      },
+    });
+
+    const wrapper = mount(TestComponent);
+    const input = wrapper.find("input").element as HTMLInputElement;
+    const selectionRangeSpy = vi.spyOn(input, "setSelectionRange");
+
+    input.value = "312321";
+    input.setSelectionRange(6, 6);
+    await wrapper.find("input").trigger("input");
+    await vi.runAllTimersAsync();
+    await nextTick();
+
+    expect(input.value).toBe("31232");
+    expect(wrapper.vm.$data.value).toBe("31232");
+    expect(selectionRangeSpy).toHaveBeenLastCalledWith(5, 5);
+  });
+
   it("should handle array mask types", async () => {
     const { input, setInputValue } = setupDirectiveTest(["###-###", "(###) ###-####"]);
 
@@ -110,7 +167,7 @@ describe("vUnimask Directive", () => {
   });
 
   it("should handle function mask types", async () => {
-    const maskFn = (val: string) => val.length <= 6 ? "###-###" : "(###) ###-####";
+    const maskFn = (val: string) => (val.length <= 6 ? "###-###" : "(###) ###-####");
     const { input, setInputValue } = setupDirectiveTest(maskFn);
 
     await setInputValue("123456");
@@ -130,12 +187,12 @@ describe("vUnimask Directive", () => {
   it("should handle UK postal code sequential input with different mask patterns", async () => {
     // Define array of UK postal code masks
     const ukPostcodeMasks = [
-      "AA#A #AA",   // EC1A 1BB
-      "A#A #AA",    // W1P 1HQ
-      "AA# #AA",    // CR2 6XH
-      "AA## #AA",   // DN55 1PT
-      "A# #AA",     // S1 1AA
-      "A## #AA",    // M60 1NW
+      "AA#A #AA", // EC1A 1BB
+      "A#A #AA", // W1P 1HQ
+      "AA# #AA", // CR2 6XH
+      "AA## #AA", // DN55 1PT
+      "A# #AA", // S1 1AA
+      "A## #AA", // M60 1NW
     ];
 
     const { input, setInputValue } = setupDirectiveTest(ukPostcodeMasks);
@@ -239,9 +296,9 @@ describe("vUnimask Directive", () => {
     // Test simpler patterns
     const otherPatterns = [
       { input: "W1P1HQ", expected: "W1P 1HQ" }, // A#A #AA
-      { input: "S11AA", expected: "S1 1AA" },   // A# #AA
+      { input: "S11AA", expected: "S1 1AA" }, // A# #AA
       { input: "M601NW", expected: "M60 1NW" }, // A## #AA
-      { input: "CR26XH", expected: "CR2 6XH" },  // AA# #AA
+      { input: "CR26XH", expected: "CR2 6XH" }, // AA# #AA
       { input: "EC1A1BB", expected: "EC1A 1BB" }, // AA#A #AA
       { input: "DN551PT", expected: "DN55 1PT" }, // AA## #AA
     ];
