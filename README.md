@@ -21,8 +21,8 @@ npm install unimask
 # yarn
 yarn add unimask
 
-# pnpm
-pnpm add unimask
+# bun
+bun add unimask
 ```
 
 
@@ -153,6 +153,18 @@ const value = ref("");
 </script>
 ```
 
+### Vue composable
+
+```vue
+<template>
+  <input v-model="value" />
+</template>
+<script setup lang="ts">
+import { useUnimask } from "unimask/vue";
+import { ref } from "vue";
+const value = ref("");
+
+
 
 ## Enjoy!
 
@@ -165,8 +177,8 @@ If you have any questions or suggestions, feel free to open an issue or pull req
 - [x] Add tests
 - [x] Add documentation
 - [x] Vue directive
-- [ ] Vue composable
-- [ ] React hook
+- [x] Vue composable
+- [x] React hook
 - [ ] Angular directive
 - [ ] Svelte directive
 - [ ] Custom tokens and formatters
