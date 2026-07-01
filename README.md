@@ -2,6 +2,8 @@
 
 A lightweight TypeScript library for masking and formatting input values.
 
+[Open the playground](https://dschewchenko.github.io/unimask/) to try Vue and React masking examples in a browser.
+
 ## Features
 
 - **Masking**: Apply predefined or custom masks to input values.

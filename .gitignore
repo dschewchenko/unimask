@@ -9,6 +9,8 @@ lerna-debug.log*
 
 node_modules
 dist
+!playground/dist/
+!playground/dist/**
 coverage
 docs
 *.local
@@ -195,6 +197,8 @@ out
 # Nuxt.js build / generate output
 .nuxt
 dist
+!playground/dist/
+!playground/dist/**
 
 # Gatsby files
 .cache/
