@@ -60,6 +60,9 @@
       "types": "./dist/react/index.d.ts"
     }
   },
+  "publishConfig": {
+    "provenance": true
+  },
   "scripts": {
     "build": "vite build && tsc --emitDeclarationOnly",
     "test": "vitest",
