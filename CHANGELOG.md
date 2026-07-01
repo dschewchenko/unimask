@@ -1,3 +1,11 @@
+## [1.0.4](https://github.com/dschewchenko/unimask/compare/v1.0.3...v1.0.4) (2026-07-01)
+
+
+### Bug Fixes
+
+* preserve formatted input tail on mid-string edits ([#3](https://github.com/dschewchenko/unimask/issues/3)) ([f597f1c](https://github.com/dschewchenko/unimask/commit/f597f1ccbb4cdca248b683a3a03fa3be75ffc1ed))
+* preserve formatted input tail on mid-string edits ([#3](https://github.com/dschewchenko/unimask/issues/3)) ([#8](https://github.com/dschewchenko/unimask/issues/8)) ([eefdeb5](https://github.com/dschewchenko/unimask/commit/eefdeb5a117e0b0ca8672a66f4378eb792202caa))
+
 ## [1.0.3](https://github.com/dschewchenko/unimask/compare/v1.0.2...v1.0.3) (2026-07-01)
 
 
