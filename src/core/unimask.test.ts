@@ -184,6 +184,14 @@ describe("Unimask", () => {
       }
     });
 
+    it("should preserve the valid tail when typing inside a formatted value", () => {
+      const maskProcessor = createMaskProcessor("(###) ###-####");
+      const result = maskProcessor("(1123) 444-44", 4);
+
+      expect(result.formatted).toBe("(112) 344-444");
+      expect(result.placeholder).toBe("(112) 344-444#");
+    });
+
     it("should handle multi-mask formats with sequential input", () => {
       const maskProcessor = createMaskProcessor([
         "###.###.###-##", // CPF

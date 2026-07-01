@@ -159,6 +159,21 @@ describe("vUnimask Directive", () => {
     expect(selectionRangeSpy).toHaveBeenLastCalledWith(5, 5);
   });
 
+  it("should preserve the valid tail when typing inside a formatted value", async () => {
+    const { input, setInputValue, wrapper } = setupDirectiveTest("(###) ###-####");
+
+    await setInputValue("11344444");
+    expect(input.value).toBe("(113) 444-44");
+
+    input.value = "(1123) 444-44";
+    input.setSelectionRange(4, 4);
+    await wrapper.find("input").trigger("input");
+    await vi.runAllTimersAsync();
+    await nextTick();
+
+    expect(input.value).toBe("(112) 344-444");
+  });
+
   it("should handle array mask types", async () => {
     const { input, setInputValue } = setupDirectiveTest(["###-###", "(###) ###-####"]);
 

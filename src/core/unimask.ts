@@ -14,6 +14,9 @@ export interface MaskProcessorResult {
 export type MaskProcessor = (input: string, cursorPos?: number) => MaskProcessorResult;
 
 type MaskFormatResult = Pick<MaskProcessorResult, "formatted" | "cursorPosition">;
+type NormalizedMaskInput = Pick<MaskFormatResult, "cursorPosition"> & {
+  input: string;
+};
 
 function createIdentityProcessor(): MaskProcessor {
   return function processInput(input: string, cursorPos: number = input.length): MaskProcessorResult {
@@ -123,9 +126,18 @@ export function createMaskProcessor(maskInput: MaskInput, options: MaskProcessor
   return function processInput(input: string, cursorPos: number = input.length): MaskProcessorResult {
     // Get appropriate mask for this input
     const { parsedMask } = getMaskForInput(masks, parsedMasks, dynamicMaskFn, input, cursorPos);
+    const inputValue = hasMaskLiteralInput(parsedMask, input)
+      ? normalizeInputForMask(parsedMask, input, cursorPos, trim)
+      : { input, cursorPosition: cursorPos };
 
     // Format the input using the mask
-    const { formatted, cursorPosition } = formatWithMask({ parsedMask, input, trim, lazy, cursorPos });
+    const { formatted, cursorPosition } = formatWithMask({
+      parsedMask,
+      input: inputValue.input,
+      trim,
+      lazy,
+      cursorPos: inputValue.cursorPosition,
+    });
 
     // Create a placeholder for the mask
     const placeholder = createPlaceholder(parsedMask, formatted, lazy);
@@ -233,6 +245,87 @@ function countProcessedChars(mask: MaskSegment[], input: string): number {
   }
 
   return inputIndex;
+}
+
+function hasMaskLiteralInput(parsedMask: MaskSegment[], input: string): boolean {
+  return parsedMask.some((segment) => !segment.isToken && input.includes(segment.char));
+}
+
+function normalizeInputForMask(
+  parsedMask: MaskSegment[],
+  input: string,
+  cursorPos: number,
+  trim: boolean,
+): NormalizedMaskInput {
+  if (!input) return { input: "", cursorPosition: 0 };
+
+  let normalized = "";
+  let normalizedCursor = 0;
+  let maskIndex = 0;
+  const inputCursorPos = Math.min(cursorPos, input.length);
+
+  for (let inputIndex = 0; inputIndex < input.length; inputIndex++) {
+    if (inputIndex === inputCursorPos) {
+      normalizedCursor = normalized.length;
+    }
+
+    const char = input[inputIndex];
+    const literalIndex = findMatchingLiteralIndex(parsedMask, maskIndex, char);
+
+    if (literalIndex !== -1) {
+      maskIndex = literalIndex + 1;
+      continue;
+    }
+
+    const tokenIndex = findNextTokenIndex(parsedMask, maskIndex);
+
+    if (tokenIndex === -1) {
+      if (!trim) {
+        normalized += char;
+      }
+      continue;
+    }
+
+    const token = parsedMask[tokenIndex].char as MainToken;
+    if (!isValidChar(token, char)) {
+      continue;
+    }
+
+    normalized += char;
+    maskIndex = tokenIndex + 1;
+  }
+
+  if (inputCursorPos >= input.length) {
+    normalizedCursor = normalized.length;
+  }
+
+  return { input: normalized, cursorPosition: normalizedCursor };
+}
+
+function findMatchingLiteralIndex(parsedMask: MaskSegment[], startIndex: number, char: string): number {
+  for (let maskIndex = startIndex; maskIndex < parsedMask.length; maskIndex++) {
+    const segment = parsedMask[maskIndex];
+
+    if (segment.isToken) {
+      return -1;
+    }
+
+    if (segment.char === char) {
+      return maskIndex;
+    }
+  }
+
+  return -1;
+}
+
+function findNextTokenIndex(parsedMask: MaskSegment[], startIndex: number): number {
+  for (let maskIndex = startIndex; maskIndex < parsedMask.length; maskIndex++) {
+    if (parsedMask[maskIndex].isToken) {
+      return maskIndex;
+    }
+  }
+
+  return -1;
 }
 
 function formatWithMask({
