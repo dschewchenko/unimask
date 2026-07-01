@@ -1,3 +1,11 @@
+## [1.0.3](https://github.com/dschewchenko/unimask/compare/v1.0.2...v1.0.3) (2026-07-01)
+
+
+### Bug Fixes
+
+* close security audit findings ([8a3265d](https://github.com/dschewchenko/unimask/commit/8a3265db4ef0302ee64a2fd53911465c69652c8e))
+* preserve wrapped input cursor in Firefox ([#3](https://github.com/dschewchenko/unimask/issues/3)) ([2a28368](https://github.com/dschewchenko/unimask/commit/2a283681373a45db9a351f82a481b14fa939db32))
+
 ## [1.0.2](https://github.com/dschewchenko/unimask/compare/v1.0.1...v1.0.2) (2025-04-03)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "unimask",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A lightweight utility library for creating mask for input values",
   "keywords": [
     "formatting",
