@@ -1,2 +1,5 @@
 [install]
 minimumReleaseAge = 259200
+
+[run]
+bun = true

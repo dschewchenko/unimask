@@ -12,7 +12,7 @@ export default defineConfig({
       },
       formats: ["es"],
     },
-    rollupOptions: {
+    rolldownOptions: {
       external: ["vue", "react", "react-dom"],
       output: {
         preserveModules: true,
