@@ -1,6 +1,6 @@
 import { computed, type MaybeRef, ref, watch } from "vue";
 import { createMaskProcessor, type MaskInput, type MaskProcessorOptions } from "../core";
-import { getInputCursorPosition, setInputCursorPosition } from "../dom";
+import { getInputCursorPosition, isLocalHtmlInputElement, setInputCursorPosition } from "../dom";
 
 export function useUnimask(mask: MaybeRef<MaskInput>, options?: MaskProcessorOptions) {
   const maskRef = ref(mask);
@@ -18,16 +18,17 @@ export function useUnimask(mask: MaybeRef<MaskInput>, options?: MaskProcessorOpt
   );
 
   function onInput(val: string | HTMLInputElement) {
-    if (val instanceof HTMLInputElement) {
-      const cursorPos = getInputCursorPosition(val);
-      const result = maskProcessor.value(val.value, cursorPos);
-
-      value.value = result.formatted.trimEnd();
-
-      setInputCursorPosition(val, result.cursorPosition);
-    } else {
+    if (!isLocalHtmlInputElement(val)) {
       value.value = maskProcessor.value(val).formatted;
+      return;
     }
+
+    const cursorPos = getInputCursorPosition(val);
+    const result = maskProcessor.value(val.value, cursorPos);
+
+    value.value = result.formatted.trimEnd();
+
+    setInputCursorPosition(val, result.cursorPosition);
   }
 
   return {

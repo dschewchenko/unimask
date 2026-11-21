@@ -1,4 +1,4 @@
-export type MaskInput = string | string[] | ((value: string, lastChar: string, cursorPos: number) => string);
+export type MaskInput = string | Array<string> | ((value: string, lastChar: string, cursorPos: number) => string);
 
 export interface MaskProcessorOptions {
   trim?: boolean;
@@ -43,8 +43,8 @@ type MaskSegment = {
 };
 
 // Parse mask into segments once, then reuse
-function parseMask(mask: string): MaskSegment[] {
-  const segments: MaskSegment[] = [];
+function parseMask(mask: string): Array<MaskSegment> {
+  const segments: Array<MaskSegment> = [];
   let isEscaped = false;
 
   for (let i = 0; i < mask.length; i++) {
@@ -82,8 +82,12 @@ function isValidChar(token: MainToken, char: string): boolean {
 
 // Formatting rules for each token type
 function formatChar(token: MainToken, char: string): string {
-  if (token === "A") return char.toUpperCase();
-  if (token === "a") return char.toLowerCase();
+  if (token === "A") {
+    return char.toUpperCase();
+  }
+  if (token === "a") {
+    return char.toLowerCase();
+  }
   return char;
 }
 
@@ -105,8 +109,8 @@ export function createMaskProcessor(maskInput: MaskInput, options: MaskProcessor
   }
 
   const { trim = true, lazy = false } = options;
-  let masks: string[] = [];
-  let parsedMasks: MaskSegment[][] = [];
+  let masks: Array<string> = [];
+  let parsedMasks: Array<Array<MaskSegment>> = [];
   let dynamicMaskFn: ((val: string, lastChar: string, cursorPos: number) => string) | null = null;
 
   if (typeof maskInput === "string") {
@@ -147,14 +151,14 @@ export function createMaskProcessor(maskInput: MaskInput, options: MaskProcessor
 }
 
 function getMaskForInput(
-  masks: string[],
-  parsedMasks: MaskSegment[][],
+  masks: Array<string>,
+  parsedMasks: Array<Array<MaskSegment>>,
   dynamicMaskFn: ((val: string, lastChar: string, cursorPos: number) => string) | null,
   input: string,
   cursorPos: number,
-): { mask: string; parsedMask: MaskSegment[] } {
+) {
   if (dynamicMaskFn) {
-    const dynamicMask = dynamicMaskFn(input, input.charAt(input.length - 1) || "", cursorPos);
+    const dynamicMask = dynamicMaskFn(input, input.slice(-1), cursorPos);
     return { mask: dynamicMask, parsedMask: parseMask(dynamicMask) };
   }
 
@@ -162,15 +166,17 @@ function getMaskForInput(
   return { mask: masks[bestMaskIndex], parsedMask: parsedMasks[bestMaskIndex] };
 }
 
-function totalTokens(parsedMask: MaskSegment[]): number {
+function totalTokens(parsedMask: Array<MaskSegment>): number {
   return parsedMask.reduce((count, segment) => (segment.isToken ? count + 1 : count), 0);
 }
 
-function findBestMaskIndex(parsedMasks: MaskSegment[][], input: string): number {
-  if (!input || parsedMasks.length === 1) return 0;
+function findBestMaskIndex(parsedMasks: Array<Array<MaskSegment>>, input: string): number {
+  if (!input || parsedMasks.length === 1) {
+    return 0;
+  }
 
   // Track how many characters each mask can process
-  const processedCounts: number[] = parsedMasks.map((mask) => countProcessedChars(mask, input));
+  const processedCounts: Array<number> = parsedMasks.map((mask) => countProcessedChars(mask, input));
   let bestIndex = 0;
   let maxCount = processedCounts[0];
 
@@ -209,8 +215,10 @@ function findBestMaskIndex(parsedMasks: MaskSegment[][], input: string): number 
 }
 
 // This function simulates how the input would be processed with the given mask
-function countProcessedChars(mask: MaskSegment[], input: string): number {
-  if (!input) return 0;
+function countProcessedChars(mask: Array<MaskSegment>, input: string): number {
+  if (!input) {
+    return 0;
+  }
 
   let inputIndex = 0;
 
@@ -247,17 +255,19 @@ function countProcessedChars(mask: MaskSegment[], input: string): number {
   return inputIndex;
 }
 
-function hasMaskLiteralInput(parsedMask: MaskSegment[], input: string): boolean {
+function hasMaskLiteralInput(parsedMask: Array<MaskSegment>, input: string): boolean {
   return parsedMask.some((segment) => !segment.isToken && input.includes(segment.char));
 }
 
 function normalizeInputForMask(
-  parsedMask: MaskSegment[],
+  parsedMask: Array<MaskSegment>,
   input: string,
   cursorPos: number,
   trim: boolean,
 ): NormalizedMaskInput {
-  if (!input) return { input: "", cursorPosition: 0 };
+  if (!input) {
+    return { input: "", cursorPosition: 0 };
+  }
 
   let normalized = "";
   let normalizedCursor = 0;
@@ -302,7 +312,7 @@ function normalizeInputForMask(
   return { input: normalized, cursorPosition: normalizedCursor };
 }
 
-function findMatchingLiteralIndex(parsedMask: MaskSegment[], startIndex: number, char: string): number {
+function findMatchingLiteralIndex(parsedMask: Array<MaskSegment>, startIndex: number, char: string): number {
   for (let maskIndex = startIndex; maskIndex < parsedMask.length; maskIndex++) {
     const segment = parsedMask[maskIndex];
 
@@ -318,7 +328,7 @@ function findMatchingLiteralIndex(parsedMask: MaskSegment[], startIndex: number,
   return -1;
 }
 
-function findNextTokenIndex(parsedMask: MaskSegment[], startIndex: number): number {
+function findNextTokenIndex(parsedMask: Array<MaskSegment>, startIndex: number): number {
   for (let maskIndex = startIndex; maskIndex < parsedMask.length; maskIndex++) {
     if (parsedMask[maskIndex].isToken) {
       return maskIndex;
@@ -335,13 +345,15 @@ function formatWithMask({
   trim,
   lazy,
 }: {
-  parsedMask: MaskSegment[];
+  parsedMask: Array<MaskSegment>;
   input: string;
   trim: boolean;
   lazy: boolean;
   cursorPos: number;
 }): MaskFormatResult {
-  if (!input) return { formatted: "", cursorPosition: 0 };
+  if (!input) {
+    return { formatted: "", cursorPosition: 0 };
+  }
 
   let formatted = "";
   let inputIndex = 0;
@@ -411,7 +423,7 @@ function formatWithMask({
 
   // Add remaining input if not trimming
   if (!trim && inputIndex < input.length) {
-    const remaining = input.substring(inputIndex);
+    const remaining = input.slice(inputIndex);
     formatted += remaining;
 
     // Update cursor if it was in the remaining part
@@ -423,8 +435,10 @@ function formatWithMask({
   return { formatted, cursorPosition };
 }
 
-function createPlaceholder(parsedMask: MaskSegment[], formatted: string, lazy: boolean): string {
-  if (lazy) return formatted;
+function createPlaceholder(parsedMask: Array<MaskSegment>, formatted: string, lazy: boolean): string {
+  if (lazy) {
+    return formatted;
+  }
   if (!formatted) {
     let placeholder = "";
     for (const segment of parsedMask) {
@@ -445,9 +459,9 @@ function createPlaceholder(parsedMask: MaskSegment[], formatted: string, lazy: b
   return placeholder;
 }
 
-function findMaskOffset(parsedMask: MaskSegment[], formatted: string): number {
+function findMaskOffset(parsedMask: Array<MaskSegment>, formatted: string): number {
   let formattedIndex = 0;
-  let offset = 0;
+  let offset: number;
 
   for (offset = 0; offset < parsedMask.length; offset++) {
     if (formattedIndex >= formatted.length) {
@@ -468,6 +482,8 @@ function findMaskOffset(parsedMask: MaskSegment[], formatted: string): number {
 }
 
 function getPlaceholderChar(segment: MaskSegment): string {
-  if (segment.isEscaped) return segment.char;
+  if (segment.isEscaped) {
+    return segment.char;
+  }
   return segment.isToken ? PLACEHOLDER_CHARS[segment.char as MainToken] : segment.char;
 }

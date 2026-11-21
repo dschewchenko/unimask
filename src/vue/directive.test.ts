@@ -5,6 +5,8 @@ import type { MaskInput } from "../core";
 import { vUnimask } from "./directive";
 
 // Create reusable test setup helper
+const maskFn = (val: string) => (val.length <= 6 ? "###-###" : "(###) ###-####");
+
 function setupDirectiveTest(mask: MaskInput = "###-###-####") {
   // Create a test component using the directive
   const TestComponent = defineComponent({
@@ -182,7 +184,6 @@ describe("vUnimask Directive", () => {
   });
 
   it("should handle function mask types", async () => {
-    const maskFn = (val: string) => (val.length <= 6 ? "###-###" : "(###) ###-####");
     const { input, setInputValue } = setupDirectiveTest(maskFn);
 
     await setInputValue("123456");

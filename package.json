@@ -80,6 +80,7 @@
   "devDependencies": {
     "@commitlint/cli": "^21.2.4",
     "@commitlint/config-conventional": "^21.2.4",
+    "@nkzw/oxlint-config": "3.0.0",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/github": "^12.0.11",
@@ -95,10 +96,15 @@
     "oxlint": "1.94.0",
     "react": "^19.3.1",
     "semantic-release": "^25.0.9",
-    "typescript": "7.0.1-rc",
+    "tsrs": "7.1.0-beta.tsrs4",
+    "typescript": "7.0.2",
     "vite": "8.3.5",
     "vitest": "^4.1.12",
     "vue": "^3.5.45"
+  },
+  "overrides": {
+    "editorconfig>minimatch": "11.0.9",
+    "js-beautify>glob": "14.0.6"
   },
   "release": {
     "plugins": [

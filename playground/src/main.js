@@ -13,7 +13,7 @@ setTimeout(() => {
   reactContainer.id = "react-root";
   const container = document.querySelector(".react-example-container");
   if (container) {
-    container.appendChild(reactContainer);
+    container.append(reactContainer);
     ReactDOM.createRoot(reactContainer).render(React.createElement(ReactExample));
   }
 }, 0);

@@ -146,7 +146,7 @@ describe("Unimask", () => {
 
       // Backspace one character at a time from the end
       for (let i = fullInput.length - 1; i >= 0; i--) {
-        currentInput = fullInput.substring(0, i);
+        currentInput = fullInput.slice(0, i);
         result = maskProcessor(currentInput);
 
         // Check at key positions
@@ -280,7 +280,7 @@ describe("Unimask", () => {
         { action: "type", value: "0", expected: { formatted: "(123) 90", placeholder: "(123) 90#-####" } },
         { action: "delete", count: 4, expected: { formatted: "(1", placeholder: "(1##) ###-####" } },
         { action: "paste", value: "4567890", expected: { formatted: "(145) 678-90", placeholder: "(145) 678-90##" } },
-      ];
+      ] as const;
 
       let currentInput = "";
 
@@ -288,7 +288,6 @@ describe("Unimask", () => {
         if (action.action === "type") {
           currentInput += action.value;
         } else if (action.action === "delete") {
-          // @ts-expect-error
           currentInput = currentInput.slice(0, -action.count);
         } else if (action.action === "paste") {
           currentInput += action.value;

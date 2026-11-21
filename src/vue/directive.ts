@@ -14,7 +14,9 @@ function initializeUnimask(el: HTMLInputElement, binding: DirectiveBinding<MaskI
   el.__unimaskCleanup?.();
 
   // Ignore if no mask is provided
-  if (!binding.value) return;
+  if (!binding.value) {
+    return;
+  }
   let isProcessing = false;
 
   const eagerProcessor = createMaskProcessor(binding.value);
@@ -25,7 +27,9 @@ function initializeUnimask(el: HTMLInputElement, binding: DirectiveBinding<MaskI
   let oldValue = el.value;
 
   const inputHandler = (event: Event) => {
-    if (isProcessing) return;
+    if (isProcessing) {
+      return;
+    }
     isProcessing = true;
 
     const input = event.target as HTMLInputElement;

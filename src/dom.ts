@@ -1,3 +1,8 @@
+export function isLocalHtmlInputElement(value: unknown): value is HTMLInputElement {
+  const prototype = HTMLInputElement.prototype;
+  return typeof value === "object" && value !== null && Object.prototype.isPrototypeOf.call(prototype, value);
+}
+
 export function getInputCursorPosition(input: HTMLInputElement): number {
   return input.selectionStart ?? input.value.length;
 }
