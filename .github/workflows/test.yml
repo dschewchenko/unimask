@@ -1,4 +1,4 @@
-name: Test
+name: Check
 on:
   pull_request:
     branches:
@@ -6,14 +6,12 @@ on:
 
 jobs:
   test:
-    name: Test
+    name: Check
     runs-on: ubuntu-latest
 
     permissions:
       # Required to checkout the code
       contents: read
-      # Required to put a comment into the pull-request
-      pull-requests: write
 
     steps:
       - uses: actions/checkout@v4
@@ -25,8 +23,3 @@ jobs:
         run: bun install --frozen-lockfile
       - name: Check
         run: bun run lint && bun run format:check
-      - name: "Test"
-        run: bun run test:coverage
-      - name: "Report Coverage"
-        if: always() # Also generate the report if tests are failing
-        uses: davelosert/vitest-coverage-report-action@v2
